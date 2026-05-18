@@ -1,137 +1,131 @@
+from contextlib import asynccontextmanager
+from datetime import datetime
+import os
+import sys
+
 from bson import ObjectId
-from motor.motor_asyncio import AsyncIOMotorCollection
-from pymongo import ReturnDocument
-
+from fastapi import FastAPI, status
+from motor.motor_asyncio import AsyncIOMotorClient
 from pydantic import BaseModel
+import uvicorn
 
-from uuid import uuid4
+from dal import ToDoDAL, ListSummary, ToDoList
 
-class ListSummary(BaseModel):
-  id: str
-  name: str
-  item_count: int
+COLLECTION_NAME = "todo_lists"
+MONGODB_URI = os.environ["MONGODB_URI"]
+DEBUG = os.environ.get("DEBUG", "").strip().lower() in {"1", "true", "on", "yes"}
 
-  @staticmethod
-  def from_doc(doc) -> "ListSummary":
-      return ListSummary(
-          id=str(doc["_id"]),
-          name=doc["name"],
-          item_count=doc["item_count"],
-      )
 
-class ToDoListItem(BaseModel):
-  id: str
-  label: str
-  checked: bool
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    # Startup:
+    client = AsyncIOMotorClient(MONGODB_URI)
+    database = client.get_default_database()
 
-  @staticmethod
-  def from_doc(item) -> "ToDoListItem":
-      return ToDoListItem(
-          id=item["id"],
-          label=item["label"],
-          checked=item["checked"],
-      )
+    # Ensure the database is available:
+    pong = await database.command("ping")
+    if int(pong["ok"]) != 1:
+        raise Exception("Cluster connection is not okay!")
 
-class ToDoList(BaseModel):
-  id: str
-  name: str
-  items: list[ToDoListItem]
+    todo_lists = database.get_collection(COLLECTION_NAME)
+    app.todo_dal = ToDoDAL(todo_lists)
 
-  @staticmethod
-  def from_doc(doc) -> "ToDoList":
-      return ToDoList(
-          id=str(doc["_id"]),
-          name=doc["name"],
-          items=[ToDoListItem.from_doc(item) for item in doc["items"]],
-      )
+    # Yield back to FastAPI Application:
+    yield
 
-class ToDoDAL:
-  def __init__(self, todo_collection: AsyncIOMotorCollection):
-      self._todo_collection = todo_collection
+    # Shutdown:
+    client.close()
 
-  async def list_todo_lists(self, session=None):
-      async for doc in self._todo_collection.find(
-          {},
-          projection={
-              "name": 1,
-              "item_count": {"$size": "$items"},
-          },
-          sort={"name": 1},
-          session=session,
-      ):
-          yield ListSummary.from_doc(doc)
 
-  async def create_todo_list(self, name: str, session=None) -> str:
-      response = await self._todo_collection.insert_one(
-          {"name": name, "items": []},
-          session=session,
-      )
-      return str(response.inserted_id)
+app = FastAPI(lifespan=lifespan, debug=DEBUG)
 
-  async def get_todo_list(self, id: str | ObjectId, session=None) -> ToDoList:
-      doc = await self._todo_collection.find_one(
-          {"_id": ObjectId(id)},
-          session=session,
-      )
-      return ToDoList.from_doc(doc)
 
-  async def delete_todo_list(self, id: str | ObjectId, session=None) -> bool:
-      response = await self._todo_collection.delete_one(
-          {"_id": ObjectId(id)},
-          session=session,
-      )
-      return response.deleted_count == 1
+@app.get("/api/lists")
+async def get_all_lists() -> list[ListSummary]:
+    return [i async for i in app.todo_dal.list_todo_lists()]
 
-  async def create_item(
-      self,
-      id: str | ObjectId,
-      label: str,
-      session=None,
-  ) -> ToDoList | None:
-      result = await self._todo_collection.find_one_and_update(
-          {"_id": ObjectId(id)},
-          {
-              "$push": {
-                  "items": {
-                      "id": uuid4().hex,
-                      "label": label,
-                      "checked": False,
-                  }
-              }
-          },
-          session=session,
-          return_document=ReturnDocument.AFTER,
-      )
-      if result:
-          return ToDoList.from_doc(result)
 
-  async def set_checked_state(
-      self,
-      doc_id: str | ObjectId,
-      item_id: str,
-      checked_state: bool,
-      session=None,
-  ) -> ToDoList | None:
-      result = await self._todo_collection.find_one_and_update(
-          {"_id": ObjectId(doc_id), "items.id": item_id},
-          {"$set": {"items.$.checked": checked_state}},
-          session=session,
-          return_document=ReturnDocument.AFTER,
-      )
-      if result:
-          return ToDoList.from_doc(result)
+class NewList(BaseModel):
+    name: str
 
-  async def delete_item(
-      self,
-      doc_id: str | ObjectId,
-      item_id: str,
-      session=None,
-  ) -> ToDoList | None:
-      result = await self._todo_collection.find_one_and_update(
-          {"_id": ObjectId(doc_id)},
-          {"$pull": {"items": {"id": item_id}}},
-          session=session,
-          return_document=ReturnDocument.AFTER,
-      )
-      if result:
-          return ToDoList.from_doc(result)
+
+class NewListResponse(BaseModel):
+    id: str
+    name: str
+
+
+@app.post("/api/lists", status_code=status.HTTP_201_CREATED)
+async def create_todo_list(new_list: NewList) -> NewListResponse:
+    return NewListResponse(
+        id=await app.todo_dal.create_todo_list(new_list.name),
+        name=new_list.name,
+    )
+
+
+@app.get("/api/lists/{list_id}")
+async def get_list(list_id: str) -> ToDoList:
+    """Get a single to-do list"""
+    return await app.todo_dal.get_todo_list(list_id)
+
+
+@app.delete("/api/lists/{list_id}")
+async def delete_list(list_id: str) -> bool:
+    return await app.todo_dal.delete_todo_list(list_id)
+
+
+class NewItem(BaseModel):
+    label: str
+
+
+class NewItemResponse(BaseModel):
+    id: str
+    label: str
+
+
+@app.post(
+    "/api/lists/{list_id}/items/",
+    status_code=status.HTTP_201_CREATED,
+)
+async def create_item(list_id: str, new_item: NewItem) -> ToDoList:
+    return await app.todo_dal.create_item(list_id, new_item.label)
+
+
+@app.delete("/api/lists/{list_id}/items/{item_id}")
+async def delete_item(list_id: str, item_id: str) -> ToDoList:
+    return await app.todo_dal.delete_item(list_id, item_id)
+
+
+class ToDoItemUpdate(BaseModel):
+    item_id: str
+    checked_state: bool
+
+
+@app.patch("/api/lists/{list_id}/checked_state")
+async def set_checked_state(list_id: str, update: ToDoItemUpdate) -> ToDoList:
+    return await app.todo_dal.set_checked_state(
+        list_id, update.item_id, update.checked_state
+    )
+
+
+class DummyResponse(BaseModel):
+    id: str
+    when: datetime
+
+
+@app.get("/api/dummy")
+async def get_dummy() -> DummyResponse:
+    return DummyResponse(
+        id=str(ObjectId()),
+        when=datetime.now(),
+    )
+
+
+def main(argv=sys.argv[1:]):
+    try:
+        uvicorn.run("server:app", host="0.0.0.0", port=3001, reload=DEBUG)
+    except KeyboardInterrupt:
+        pass
+
+
+if __name__ == "__main__":
+    main()
