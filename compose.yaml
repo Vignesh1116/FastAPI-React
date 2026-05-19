@@ -1,5 +1,11 @@
 name: todo-app
 services:
+  mongodb:
+    image: mongo:latest
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo-data:/data/db
   nginx:
     image: nginx:1.17
     volumes:
@@ -11,19 +17,25 @@ services:
       - frontend
   frontend:
     image: "node:22"
-    user: "node"
     working_dir: /home/node/app
     environment:
       - NODE_ENV=development
       - WDS_SOCKET_PORT=0
+      - HOST=0.0.0.0
+      - CHOKIDAR_USEPOLLING=true
     volumes:
       - ./frontend/:/home/node/app
+      - /home/node/app/node_modules
     expose:
       - "3000"
     ports:
       - "3000:3000"
-    command: "npm start"
+    command: sh -c "npm install && npm start"
+    stdin_open: true
+    tty: true
   backend:
+    depends_on:
+      - mongodb
     image: todo-app/backend
     build: ./backend
     volumes:
@@ -38,3 +50,6 @@ services:
     env_file:
       - path: ./.env
         required: true
+
+volumes:
+  mongo-data:
