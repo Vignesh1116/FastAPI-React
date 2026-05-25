@@ -1,6 +1,6 @@
 import "./ListsTodoLists.css";
 import { useRef } from "react";
-import { BiSolidTrash, BiPlus } from "react-icons/bi";
+import { BiSolidTrash, BiPlus, BiSun, BiMoon } from "react-icons/bi";
 
 function ListToDoLists({
   listSummaries,
@@ -8,6 +8,8 @@ function ListToDoLists({
   handleSelectList,
   handleNewToDoList,
   handleDeleteToDoList,
+  theme,
+  toggleTheme,
 }) {
   const inputRef = useRef(null);
 
@@ -36,7 +38,12 @@ function ListToDoLists({
   return (
     <div className="ListToDoLists">
       <header className="app-header-title">
-        <h1>ZenTodo</h1>
+        <div className="header-top">
+          <h1>ZenTodo</h1>
+          <button className="theme-toggle-btn" onClick={toggleTheme} title="Toggle Theme">
+            {theme === "dark" ? <BiSun /> : <BiMoon />}
+          </button>
+        </div>
         <p className="subtitle">Manage your daily focus and tasks</p>
       </header>
 

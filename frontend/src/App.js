@@ -8,6 +8,19 @@ function App() {
   const [listSummaries, setListSummaries] = useState(null);
   const [selectedItem, setSelectedItem] = useState(null);
 
+  const [theme, setTheme] = useState(() => {
+    return localStorage.getItem("theme") || "dark";
+  });
+
+  useEffect(() => {
+    document.documentElement.setAttribute("data-theme", theme);
+    localStorage.setItem("theme", theme);
+  }, [theme]);
+
+  const toggleTheme = () => {
+    setTheme((prev) => (prev === "dark" ? "light" : "dark"));
+  };
+
   useEffect(() => {
     reloadData().catch(console.error);
   }, []);
@@ -58,6 +71,8 @@ function App() {
             handleSelectList={handleSelectList}
             handleNewToDoList={handleNewToDoList}
             handleDeleteToDoList={handleDeleteToDoList}
+            theme={theme}
+            toggleTheme={toggleTheme}
           />
         </aside>
         <main className={`app-main ${selectedItem === null ? 'mobile-hidden' : ''}`}>
