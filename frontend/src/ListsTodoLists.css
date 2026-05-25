@@ -9,7 +9,7 @@
   margin-bottom: 0.25rem;
 }
 
-.app-header-title h1 {
+.app-logo {
   font-size: 1.5rem;
   font-weight: 700;
   color: var(--text-primary);
@@ -17,6 +17,19 @@
   display: flex;
   align-items: center;
   gap: 0.5rem;
+}
+
+.logo-icon {
+  font-size: 1.45rem;
+  background-color: var(--accent-color);
+  color: white;
+  border-radius: 6px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  padding: 1px;
 }
 
 .theme-toggle-btn {
@@ -38,19 +51,6 @@
   background-color: var(--border-color);
   color: var(--text-primary);
   border-color: var(--border-hover);
-}
-
-.app-header-title h1::before {
-  content: "✓";
-  background-color: var(--accent-color);
-  color: white;
-  width: 22px;
-  height: 22px;
-  border-radius: 4px;
-  font-size: 0.75rem;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
 }
 
 .app-header-title .subtitle {

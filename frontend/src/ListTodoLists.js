@@ -1,6 +1,6 @@
 import "./ListsTodoLists.css";
 import { useRef } from "react";
-import { BiSolidTrash, BiPlus, BiSun, BiMoon } from "react-icons/bi";
+import { BiSolidTrash, BiPlus, BiSun, BiMoon, BiCheckDouble } from "react-icons/bi";
 
 function ListToDoLists({
   listSummaries,
@@ -39,7 +39,10 @@ function ListToDoLists({
     <div className="ListToDoLists">
       <header className="app-header-title">
         <div className="header-top">
-          <h1>ZenTodo</h1>
+          <h1 className="app-logo">
+            <BiCheckDouble className="logo-icon" />
+            <span>ZenTodo</span>
+          </h1>
           <button className="theme-toggle-btn" onClick={toggleTheme} title="Toggle Theme">
             {theme === "dark" ? <BiSun /> : <BiMoon />}
           </button>
