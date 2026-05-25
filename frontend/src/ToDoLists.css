@@ -1,71 +1,72 @@
 .list-header {
   display: flex;
   align-items: center;
-  gap: 1.5rem;
-  margin-bottom: 2.5rem;
+  gap: 1.25rem;
+  margin-bottom: 2.25rem;
 }
 
+/* Back button - hidden on desktop, shown on mobile */
 .back-btn {
-  background: rgba(255, 255, 255, 0.05);
+  display: none;
+  background-color: rgba(255, 255, 255, 0.03);
   color: var(--text-secondary);
-  border: 1px solid var(--card-border);
-  padding: 0.625rem 1.25rem;
-  border-radius: var(--radius-md);
-  display: inline-flex;
+  border: 1px solid var(--border-color);
+  padding: 0.5rem 0.875rem;
+  border-radius: var(--radius-sm);
+  font-size: 0.85rem;
   align-items: center;
-  gap: 0.5rem;
-  box-shadow: var(--shadow-sm);
+  gap: 0.4rem;
 }
 
 .back-btn:hover {
-  background: rgba(255, 255, 255, 0.1);
+  background-color: rgba(255, 255, 255, 0.06);
   color: var(--text-primary);
-  border-color: var(--card-hover-border);
-  transform: translateX(-3px);
+  border-color: var(--border-hover);
 }
 
-.back-btn:active {
-  transform: translateX(0);
+@media (max-width: 768px) {
+  .back-btn {
+    display: inline-flex;
+  }
 }
 
 .list-title {
-  font-size: 2rem;
+  font-size: 1.6rem;
   font-weight: 700;
-  letter-spacing: -0.03em;
-  background: linear-gradient(135deg, #f8fafc 0%, #cbd5e1 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
+  color: var(--text-primary);
+  letter-spacing: -0.025em;
 }
 
-/* Tasks list container */
+/* Tasks list container - list-like view */
 .tasks-container {
   display: flex;
   flex-direction: column;
-  gap: 0.75rem;
+  background-color: var(--sidebar-bg);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
 }
 
-/* Task Item Card */
+/* Task Item */
 .task-item {
-  background: var(--card-bg);
-  border: 1px solid var(--card-border);
-  border-radius: var(--radius-md);
-  padding: 1.1rem 1.5rem;
   display: flex;
   align-items: center;
-  gap: 1.25rem;
+  gap: 1rem;
+  padding: 0.875rem 1.25rem;
   cursor: pointer;
-  transition: var(--transition-all);
-  backdrop-filter: blur(8px);
+  transition: var(--transition-fast);
+  border-bottom: 1px solid var(--border-color);
+}
+
+.task-item:last-child {
+  border-bottom: none;
 }
 
 .task-item:hover {
-  background: var(--card-hover-bg);
-  border-color: var(--card-hover-border);
-  transform: translateY(-1px);
-  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15);
+  background-color: rgba(255, 255, 255, 0.02);
 }
 
-/* Custom Checkbox Design */
+/* Circular/Rounded Checkbox */
 .checkbox-wrapper {
   display: flex;
   align-items: center;
@@ -73,47 +74,43 @@
 }
 
 .custom-checkbox {
-  width: 24px;
-  height: 24px;
-  border: 2px solid var(--text-muted);
-  border-radius: 6px;
+  width: 18px;
+  height: 18px;
+  border: 1.5px solid var(--text-muted);
+  border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: var(--transition-all);
-  background: rgba(0, 0, 0, 0.2);
+  transition: var(--transition-fast);
+  background-color: transparent;
 }
 
 .task-item:hover .custom-checkbox {
-  border-color: #8b5cf6;
+  border-color: var(--text-secondary);
 }
 
 .custom-checkbox.checked {
-  background: var(--primary-gradient);
+  background-color: var(--success-color);
   border-color: transparent;
-  box-shadow: 0 2px 8px rgba(99, 102, 241, 0.4);
 }
 
 .checkmark {
-  color: white;
-  font-size: 0.9rem;
+  color: #ffffff;
+  font-size: 0.7rem;
   font-weight: bold;
-  animation: scaleIn 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
+/* Label text */
 .task-item .label {
-  font-size: 1.05rem;
-  font-weight: 500;
+  font-size: 0.95rem;
   color: var(--text-primary);
+  font-weight: 500;
   flex: 1;
-  transition: var(--transition-all);
+  transition: var(--transition-fast);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
   user-select: none;
-}
-
-/* Checked Task Styling */
-.task-item.checked {
-  background: rgba(255, 255, 255, 0.01);
-  border-color: rgba(255, 255, 255, 0.03);
 }
 
 .task-item.checked .label {
@@ -121,7 +118,36 @@
   color: var(--text-muted);
 }
 
-@keyframes scaleIn {
-  0% { transform: scale(0); opacity: 0; }
-  100% { transform: scale(1); opacity: 1; }
+/* Delete button - shows on hover */
+.task-item .trash-btn {
+  background: transparent;
+  color: var(--text-muted);
+  width: 28px;
+  height: 28px;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: var(--transition-fast);
+  opacity: 0;
+  pointer-events: none;
+}
+
+.task-item:hover .trash-btn {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.task-item .trash-btn:hover {
+  background-color: rgba(224, 69, 69, 0.15);
+  color: var(--danger-hover);
+}
+
+/* Task view empty state */
+.tasks-container .empty-state {
+  padding: 3rem 2rem;
+  text-align: center;
+  color: var(--text-muted);
+  font-size: 0.9rem;
+  background-color: transparent;
 }

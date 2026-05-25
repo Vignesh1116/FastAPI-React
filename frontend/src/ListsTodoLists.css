@@ -1,129 +1,153 @@
 .app-header-title {
-  text-align: center;
-  margin-bottom: 2.5rem;
+  margin-bottom: 2rem;
 }
 
 .app-header-title h1 {
-  font-size: 3rem;
-  font-weight: 800;
-  letter-spacing: -0.05em;
-  background: linear-gradient(135deg, #a78bfa 0%, #6366f1 50%, #4f46e5 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  margin-bottom: 0.5rem;
-  text-shadow: 0 4px 20px rgba(99, 102, 241, 0.15);
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  letter-spacing: -0.02em;
+  margin-bottom: 0.25rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.app-header-title h1::before {
+  content: "✓";
+  background-color: var(--accent-color);
+  color: white;
+  width: 22px;
+  height: 22px;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .app-header-title .subtitle {
-  font-size: 1.1rem;
+  font-size: 0.825rem;
   color: var(--text-secondary);
   font-weight: 400;
 }
 
-/* Grid layout */
-.lists-grid {
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: 1rem;
-}
-
-/* Card Styling */
-.list-summary-card {
-  background: var(--card-bg);
-  border: 1px solid var(--card-border);
+/* Sidebar Input Setup */
+.ListToDoLists .input-card {
+  background-color: rgba(0, 0, 0, 0.15);
+  border: 1px solid var(--border-color);
+  padding: 0.75rem;
   border-radius: var(--radius-md);
-  padding: 1.25rem 1.75rem;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  cursor: pointer;
-  transition: var(--transition-all);
-  backdrop-filter: blur(8px);
-  position: relative;
-  overflow: hidden;
+  margin-bottom: 1.5rem;
 }
 
-.list-summary-card::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 4px;
-  height: 100%;
-  background: var(--primary-gradient);
-  opacity: 0.7;
-  transition: var(--transition-all);
+.ListToDoLists .input-group input {
+  padding: 0.5rem 0.75rem;
+  font-size: 0.875rem;
 }
 
-.list-summary-card:hover {
-  background: var(--card-hover-bg);
-  border-color: var(--card-hover-border);
-  transform: translateY(-2px) scale(1.01);
-  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+.ListToDoLists .input-group .btn-primary {
+  padding: 0.5rem 1rem;
+  font-size: 0.825rem;
 }
 
-.list-summary-card:hover::before {
-  width: 6px;
-  opacity: 1;
-}
-
-.list-summary-card:active {
-  transform: translateY(0) scale(1);
-}
-
-.card-content {
+/* Navigation Lists Menu */
+.lists-grid {
   display: flex;
   flex-direction: column;
   gap: 0.25rem;
 }
 
-.list-summary-card .name {
-  font-size: 1.2rem;
-  font-weight: 600;
-  color: var(--text-primary);
-  transition: var(--transition-all);
+.list-summary-card {
+  border: none;
+  background: transparent;
+  border-radius: var(--radius-sm);
+  padding: 0.65rem 0.875rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  cursor: pointer;
+  transition: var(--transition-fast);
+  color: var(--text-secondary);
 }
 
-.list-summary-card:hover .name {
-  color: #c084fc;
+/* Hover & Active States */
+.list-summary-card:hover {
+  background-color: rgba(255, 255, 255, 0.035);
+  color: var(--text-primary);
+}
+
+.list-summary-card.active {
+  background-color: rgba(255, 255, 255, 0.07);
+  color: var(--text-primary);
+  font-weight: 500;
+}
+
+.card-content {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex: 1;
+  overflow: hidden;
+}
+
+.list-summary-card .name {
+  font-size: 0.925rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .list-summary-card .count {
-  font-size: 0.875rem;
+  font-size: 0.775rem;
+  background-color: rgba(255, 255, 255, 0.04);
+  border: 1px solid var(--border-color);
   color: var(--text-secondary);
+  padding: 0.1rem 0.4rem;
+  border-radius: 10px;
+  margin-left: auto;
+  transition: var(--transition-fast);
 }
 
-/* Trash button inside list summary */
-.trash-btn {
-  background: rgba(239, 68, 68, 0.08);
-  color: var(--danger-color);
-  width: 38px;
-  height: 38px;
-  border-radius: 50%;
+.list-summary-card:hover .count,
+.list-summary-card.active .count {
+  background-color: rgba(255, 255, 255, 0.08);
+  color: var(--text-primary);
+}
+
+/* Small, clean delete button that reveals on card hover */
+.list-summary-card .trash-btn {
+  background: transparent;
+  color: var(--text-muted);
+  width: 26px;
+  height: 26px;
+  border-radius: 4px;
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: var(--transition-all);
+  transition: var(--transition-fast);
+  opacity: 0;
+  pointer-events: none;
+  margin-left: 0.5rem;
 }
 
-.trash-btn:hover {
-  background: var(--danger-color);
-  color: white;
-  transform: scale(1.1);
-  box-shadow: 0 4px 12px rgba(239, 68, 68, 0.25);
+.list-summary-card:hover .trash-btn {
+  opacity: 1;
+  pointer-events: auto;
 }
 
-.trash-btn:active {
-  transform: scale(0.95);
+.list-summary-card .trash-btn:hover {
+  background-color: rgba(224, 69, 69, 0.15);
+  color: var(--danger-hover);
 }
 
-/* Empty states */
-.empty-state {
+/* Empty State */
+.ListToDoLists .empty-state {
   text-align: center;
-  padding: 4rem 2rem;
-  background: var(--card-bg);
-  border: 1px dashed var(--card-border);
-  border-radius: var(--radius-lg);
-  color: var(--text-secondary);
-  font-size: 1.05rem;
+  padding: 2rem 1rem;
+  background-color: transparent;
+  border: 1px dashed var(--border-color);
+  border-radius: var(--radius-md);
+  color: var(--text-muted);
+  font-size: 0.85rem;
 }

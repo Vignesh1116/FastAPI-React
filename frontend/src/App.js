@@ -48,24 +48,32 @@ function App() {
     reloadData().catch(console.error);
   }
 
-  if (selectedItem === null) {
-    return (
-      <div className="App">
-        <ListToDoLists
-          listSummaries={listSummaries}
-          handleSelectList={handleSelectList}
-          handleNewToDoList={handleNewToDoList}
-          handleDeleteToDoList={handleDeleteToDoList}
-        />
+  return (
+    <div className="App">
+      <div className="app-container">
+        <aside className={`app-sidebar ${selectedItem !== null ? 'mobile-hidden' : ''}`}>
+          <ListToDoLists
+            listSummaries={listSummaries}
+            selectedItem={selectedItem}
+            handleSelectList={handleSelectList}
+            handleNewToDoList={handleNewToDoList}
+            handleDeleteToDoList={handleDeleteToDoList}
+          />
+        </aside>
+        <main className={`app-main ${selectedItem === null ? 'mobile-hidden' : ''}`}>
+          {selectedItem !== null ? (
+            <ToDoList listId={selectedItem} handleBackButton={backToList} />
+          ) : (
+            <div className="empty-detail-state">
+              <div className="empty-detail-icon">✓</div>
+              <h2>Select a list to get started</h2>
+              <p>Choose an existing to-do list from the sidebar or create a new one to start adding tasks.</p>
+            </div>
+          )}
+        </main>
       </div>
-    );
-  } else {
-    return (
-      <div className="App">
-        <ToDoList listId={selectedItem} handleBackButton={backToList} />
-      </div>
-    );
-  }
+    </div>
+  );
 }
 
 export default App;

@@ -4,6 +4,7 @@ import { BiSolidTrash, BiPlus } from "react-icons/bi";
 
 function ListToDoLists({
   listSummaries,
+  selectedItem,
   handleSelectList,
   handleNewToDoList,
   handleDeleteToDoList,
@@ -63,7 +64,7 @@ function ListToDoLists({
             return (
               <div
                 key={summary.id}
-                className="list-summary-card"
+                className={`list-summary-card ${summary.id === selectedItem ? 'active' : ''}`}
                 onClick={() => handleSelectList(summary.id)}
               >
                 <div className="card-content">
