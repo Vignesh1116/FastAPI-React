@@ -1,10 +1,10 @@
 import "./ToDoLists.css";
 import { useEffect, useState, useRef } from "react";
 import axios from "axios";
-import { BiSolidTrash } from "react-icons/bi";
+import { BiSolidTrash, BiPlus, BiArrowBack } from "react-icons/bi";
 
 function ToDoList({ listId, handleBackButton }) {
-  let labelRef = useRef();
+  const inputRef = useRef(null);
   const [listData, setListData] = useState(null);
 
   useEffect(() => {
@@ -15,6 +15,19 @@ function ToDoList({ listId, handleBackButton }) {
     };
     fetchData();
   }, [listId]);
+
+  const handleCreate = () => {
+    if (inputRef.current && inputRef.current.value.trim()) {
+      handleCreateItem(inputRef.current.value.trim());
+      inputRef.current.value = "";
+    }
+  };
+
+  const handleKeyDown = (e) => {
+    if (e.key === "Enter") {
+      handleCreate();
+    }
+  };
 
   function handleCreateItem(label) {
     const updateData = async () => {
@@ -52,59 +65,70 @@ function ToDoList({ listId, handleBackButton }) {
 
   if (listData === null) {
     return (
-      <div className="ToDoList loading">
-        <button className="back" onClick={handleBackButton}>
-          Back
-        </button>
-        Loading to-do list ...
+      <div className="ToDoList loading-container">
+        <div className="loading-spinner"></div>
+        <div className="loading-text">Loading to-do list ...</div>
       </div>
     );
   }
+
   return (
     <div className="ToDoList">
-      <button className="back" onClick={handleBackButton}>
-        Back
-      </button>
-      <h1>List: {listData.name}</h1>
-      <div className="box">
-        <label>
-          New Item:&nbsp;
-          <input id={labelRef} type="text" />
-        </label>
-        <button
-          onClick={() =>
-            handleCreateItem(document.getElementById(labelRef).value)
-          }
-        >
-          New
+      <header className="list-header">
+        <button className="back-btn" onClick={handleBackButton} title="Back to Lists">
+          <BiArrowBack /> Back
         </button>
+        <h1 className="list-title">{listData.name}</h1>
+      </header>
+
+      <div className="input-card">
+        <div className="input-group">
+          <input
+            ref={inputRef}
+            type="text"
+            placeholder="Add a new task..."
+            onKeyDown={handleKeyDown}
+          />
+          <button className="btn-primary" onClick={handleCreate}>
+            <BiPlus /> Add Task
+          </button>
+        </div>
       </div>
-      {listData.items.length > 0 ? (
-        listData.items.map((item) => {
-          return (
-            <div
-              key={item.id}
-              className={item.checked ? "item checked" : "item"}
-              onClick={() => handleCheckToggle(item.id, !item.checked)}
-            >
-              <span>{item.checked ? "✅" : "⬜️"} </span>
-              <span className="label">{item.label} </span>
-              <span className="flex"></span>
-              <span
-                className="trash"
-                onClick={(evt) => {
-                  evt.stopPropagation();
-                  handleDeleteItem(item.id);
-                }}
+
+      <div className="tasks-container">
+        {listData.items.length > 0 ? (
+          listData.items.map((item) => {
+            return (
+              <div
+                key={item.id}
+                className={item.checked ? "task-item checked" : "task-item"}
+                onClick={() => handleCheckToggle(item.id, !item.checked)}
               >
-                <BiSolidTrash />
-              </span>
-            </div>
-          );
-        })
-      ) : (
-        <div className="box">There are currently no items.</div>
-      )}
+                <div className="checkbox-wrapper">
+                  <div className={`custom-checkbox ${item.checked ? 'checked' : ''}`}>
+                    {item.checked && <span className="checkmark">✓</span>}
+                  </div>
+                </div>
+                <span className="label">{item.label}</span>
+                <button
+                  className="trash-btn"
+                  title="Delete Task"
+                  onClick={(evt) => {
+                    evt.stopPropagation();
+                    handleDeleteItem(item.id);
+                  }}
+                >
+                  <BiSolidTrash />
+                </button>
+              </div>
+            );
+          })
+        ) : (
+          <div className="empty-state">
+            <p>No tasks yet! Add one above to get started.</p>
+          </div>
+        )}
+      </div>
     </div>
   );
 }
